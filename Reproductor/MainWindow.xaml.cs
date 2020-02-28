@@ -40,6 +40,7 @@ namespace Reproductor
         EfectoVolumen efectoVolumen;
         EfectoFadeIn efectoFadeIn;
         EfectoFadeOut efectoFadeOut;
+        EfectoDelay efectoDelay;
 
         public MainWindow()
         {
@@ -95,23 +96,26 @@ namespace Reproductor
                     /*volume = new VolumeSampleProvider(reader);
                     volume.Volume = (float)(sldVolumen.Value);*/
 
-                    efectoVolumen = new EfectoVolumen(reader);
-                    efectoVolumen.Volumen = (float)(sldVolumen.Value);
+                    efectoDelay = new EfectoDelay(reader, (int)(sldOffsetDelay.Value));
+
 
                     float duracionFadeIn = float.Parse(txtDuracionFadeIn.Text);
 
-                    //efectoFadeIn = new EfectoFadeIn(reader, duracionFadeIn);
+                    efectoFadeIn = new EfectoFadeIn(efectoDelay, duracionFadeIn);
 
                     float inicioFadeOut = float.Parse(txtInicioFadeOut.Text);
                     float duracionFadeOut = float.Parse(txtDuracionFadeOut.Text);
 
-                    efectoFadeOut = new EfectoFadeOut(reader, inicioFadeOut, duracionFadeOut);
+                    efectoFadeOut = new EfectoFadeOut(efectoFadeIn, inicioFadeOut, duracionFadeOut);
+
+                    efectoVolumen = new EfectoVolumen(efectoFadeOut);
+                    efectoVolumen.Volumen = (float)(sldVolumen.Value);
 
                     output = new WaveOut();
                     output.DeviceNumber = cbDispositivoSalida.SelectedIndex;
                     output.PlaybackStopped += Output_PlaybackStopped;
                     output.Init(efectoVolumen);
-                    output.Init(efectoFadeOut);
+                    //output.Init(efectoFadeOut);
                     output.Play();
                     
                     // Cambiar el volumen del output
@@ -192,6 +196,11 @@ namespace Reproductor
 
                 efectoVolumen.Volumen = (float)(sldVolumen.Value);
             }
+        }
+
+        private void SldOffsetDelay_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            lblOffsetDelay.Text = ((int)(sldOffsetDelay.Value)).ToString();
         }
     }
 }
